@@ -1,0 +1,23 @@
+{
+  "name": "danfo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victorwlin/danfo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/victorwlin/danfo/issues"
+  },
+  "homepage": "https://github.com/victorwlin/danfo#readme",
+  "dependencies": {
+    "danfojs-node": "^0.2.6",
+    "ttest": "^3.0.0"
+  }
+}
