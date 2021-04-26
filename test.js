@@ -1,40 +1,39 @@
 const dfd = require("danfojs-node");
 
 dfd
-  .read_csv("test.csv")
+  .read_csv("feb_prepped.csv")
   .then((df) => {
-    df.print();
+    const optionType = "call";
+    const winDefinition = [25];
+    const variables = ["ask"];
 
-    const fillna = df["sector"].fillna({ value: "N/A" });
-    df.addColumn({ column: "sector", value: fillna });
-    df.print();
+    // main loop that goes through the different win definitions
+    winDefinition.forEach((currentWinDef) => {
+      const winner = df["high_return"].ge(currentWinDef);
+      df.addColumn({ column: "winner", value: winner });
+    });
 
-    while (df["sector"].str.search(",").max() > -1) {
-      const noComma = df["sector"].str.replace(",", "");
-      df.addColumn({ column: "sector", value: noComma });
-    }
+    const dfOptionType = df.query({
+      column: "option_type",
+      is: "==",
+      to: optionType,
+    });
 
-    df.print();
-    // let commaCheck = df["sector"].str.search(",");
-    // commaCheck.print();
+    // console.log(dfOptionType.dtype);
 
-    // console.log(commaCheck.max());
+    // dfOptionType["winner"].print();
 
-    // let noComma = df["sector"].str.replace(",", "");
-    // df.addColumn({ column: "sector", value: noComma });
+    const dfOptionTypeWin = dfOptionType.query({
+      column: "winner",
+      is: "==",
+      to: true,
+    });
 
-    // df.print();
+    dfOptionTypeWin.print();
 
-    // commaCheck = df["sector"].str.search(",");
-    // commaCheck.print();
-
-    // noComma = df["sector"].str.replace(",", "");
-    // df.addColumn({ column: "sector", value: noComma });
-
-    // df.print();
-
-    // commaCheck = df["sector"].str.search(",");
-    // commaCheck.print();
+    // df.to_csv("test.csv").catch((err) => {
+    //   console.log(err);
+    // });
   })
   .catch((err) => {
     console.log(err);

@@ -1,11 +1,10 @@
+// the purpose of this file is to prep the raw analytics file to be merged with the main file
+// and to be used for further analysis
 const dfd = require("danfojs-node");
 
 dfd
   .read_csv("feb_raw.csv")
   .then((df) => {
-    // variable defining winners
-    const winDefinition = 25;
-
     /*
     CHECK FOR COMMAS
     one of the sectors in the sector column is "Mining, Quarrying, and Oil and Gas Extraction"
@@ -29,7 +28,7 @@ dfd
     df.addColumn({ column: "vol_oi", value: vol_oi });
 
     /*
-    CREATE dte COLUMN
+    CREATE expires_in COLUMN
     */
     // convert expires_at and alert_time columns to datetime format
     // it looks like only series can be converted and not the whole dataframe
@@ -38,33 +37,26 @@ dfd
 
     // for each element in our datetime series, calculate the difference
     // the difference is in milliseconds, so first we push it into a temporary array
-    const dteInMS = [];
+    const expires_inInMilliseconds = [];
     dt_expires_at.date_list.forEach((value, index) => {
-      dteInMS.push(value - dt_alert_time.date_list[index]);
+      expires_inInMilliseconds.push(value - dt_alert_time.date_list[index]);
     });
 
     // now we convert milliseconds to days and push into our final array
     // for some reason when expires_at is converted to datetime, it becomes one day earlier
     // that is why we have to add one
-    const dte = [];
-    dteInMS.forEach((value) => {
-      dte.push(value / (1000 * 60 * 60 * 24) + 1);
+    const expires_in = [];
+    expires_inInMilliseconds.forEach((value) => {
+      expires_in.push(value / (1000 * 60 * 60 * 24) + 1);
     });
 
-    // finally we add the dte column to our main dataframe
-    df.addColumn({ column: "dte", value: dte });
-
-    /*
-      CREATE winner COLUMN 
-    */
-    // this winner column is necessary for queries we have to make in the future
-    const winner = df["high_return"].ge(winDefinition);
-    df.addColumn({ column: "winner", value: winner });
+    // finally we add the expires_in column to our main dataframe
+    df.addColumn({ column: "expires_in", value: expires_in });
 
     /*
     OUTPUT AS CSV FILE
     */
-    df.to_csv("feb_raw_prepped.csv").catch((err) => {
+    df.to_csv("feb_prepped.csv").catch((err) => {
       console.log(err);
     });
   })

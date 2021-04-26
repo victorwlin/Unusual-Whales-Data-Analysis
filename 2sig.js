@@ -2,59 +2,80 @@ const dfd = require("danfojs-node");
 const ttest = require("ttest");
 
 dfd
-  .read_csv("feb_raw_prepped.csv")
+  .read_csv("feb_prepped.csv")
   .then((df) => {
-    const type = "call";
+    const optionType = "call";
     const winDefinition = [25];
+    const variables = ["delta"];
+    // const variables = [
+    //   "ask",
+    //   "bid",
+    //   "delta",
+    //   "buy_amount",
+    //   "expires_in",
+    //   "gamma",
+    //   "implied_volatility",
+    //   "open_interest",
+    //   "theta",
+    //   "vega",
+    //   "vol_oi",
+    //   "volume",
+    // ];
 
-    winDefinition.forEach((currentWinDef, index) => {
-      // everything goes in here
+    // main loop that goes through the different win definitions
+    winDefinition.forEach((currentWinDef) => {
+      /*
+      CREATE winner COLUMN 
+      */
+      // this winner column is necessary for queries we have to make in the future
+      const winner = df["high_return"].ge(currentWinDef);
+      df.addColumn({ column: "winner", value: winner });
+
+      /*
+      create three dataframes: one for optionType, one for winners, and one for losers
+      */
+      const dfOptionType = df.query({
+        column: "option_type",
+        is: "==",
+        to: optionType,
+      });
+      const dfOptionTypeWin = dfOptionType.query({
+        column: "winner",
+        is: "==",
+        to: true,
+      });
+      const dfOptionTypeLose = dfOptionType.query({
+        column: "winner",
+        is: "==",
+        to: false,
+      });
+
+      /*
+      loop through the variables and calculate & store p-values
+      */
+      variables.forEach((currentVar) => {
+        // create win and lose arrays
+        const winArray = dfOptionTypeWin[currentVar].values;
+        const loseArray = dfOptionTypeLose[currentVar].values;
+        console.log(ttest(winArray, loseArray).testValue());
+      });
     });
 
-    /*
-    CREATE call DATAFRAME
-    */
-    const callDF = df.query({ column: "option_type", is: "==", to: "call" });
-
-    /*
-    CREATE call win DATAFRAME
-    */
-    const callWinDF = callDF.query({ column: "winner", is: "==", to: "true" });
-
-    /*
-    CREATE buy_amount call win ARRAY
-    */
-    const buy_amountCallWinArray = callWinDF["buy_amount"].values;
-
-    /*
-    CREATE call lose DATAFRAME
-    */
-    const callLoseDF = callDF.query({
-      column: "winner",
-      is: "==",
-      to: "false",
-    });
-
-    /*
-    CREATE buy_amount call lose ARRAY
-    */
-    const buy_amountCallLoseArray = callLoseDF["buy_amount"].values;
-
-    const buy_amountTtest = ttest(
-      buy_amountCallWinArray,
-      buy_amountCallLoseArray,
-      {
-        alternative: "less",
-      }
-    );
-    const buy_amountTtestResult = {
-      tvalue: buy_amountTtest.testValue(),
-      pvalue: buy_amountTtest.pValue(),
-      confidence: buy_amountTtest.confidence(),
-      valid: buy_amountTtest.valid(),
-      df: buy_amountTtest.freedom(),
-    };
-    console.log(buy_amountTtestResult);
+    // const buy_amountTtest = ttest(
+    //   buy_amountCallWinArray,
+    //   buy_amountCallLoseArray,
+    //   {
+    //     alternative: "less",
+    //   }
+    // );
+    // const buy_amountTtestResult = {
+    //   tvalue: buy_amountTtest.testValue(),
+    //   pvalue: buy_amountTtest.pValue(),
+    //   confidence: buy_amountTtest.confidence(),
+    //   valid: buy_amountTtest.valid(),
+    //   df: buy_amountTtest.freedom(),
+    // };
+    // console.log(buy_amountTtestResult);
   })
   .catch((err) => {
     console.log(err);
