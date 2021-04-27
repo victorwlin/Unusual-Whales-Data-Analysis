@@ -1,9 +1,43 @@
 const dfd = require("danfojs-node");
 
-const data = ["Mining, Quarrying, and Oil and Gas Extration"];
+const placeholderData = { A: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] };
+const variables = [
+  "ask",
+  "bid",
+  "delta",
+  "buy_amount",
+  "expires_in",
+  "gamma",
+  "implied_volatility",
+  "open_interest",
+  "theta",
+  "vega",
+  "vol_oi",
+  "volume",
+];
 
-const s = new dfd.Series(data);
-// s.print();
+const dfOutput = new dfd.DataFrame(placeholderData);
+dfOutput.print();
 
-const sNew = s.replace({ replace: ",", with: " " });
-sNew.print();
+const phData = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+
+// const phData = [
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+//   { A: 1 },
+// ];
+
+dfOutput.addColumn({
+  column: "B",
+  value: phData,
+});
+dfOutput.print();
