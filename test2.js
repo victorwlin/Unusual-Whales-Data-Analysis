@@ -1,43 +1,24 @@
 const dfd = require("danfojs-node");
 
-const placeholderData = { A: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] };
-const variables = [
-  "ask",
-  "bid",
-  "delta",
-  "buy_amount",
-  "expires_in",
-  "gamma",
-  "implied_volatility",
-  "open_interest",
-  "theta",
-  "vega",
-  "vol_oi",
-  "volume",
-];
+const x = "25";
 
-const dfOutput = new dfd.DataFrame(placeholderData);
-dfOutput.print();
+const placeholderData = [[0, 0, 0, 0, 0, 0]];
 
-const phData = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+// const placeholderData = {
+//   Var: [0],
+//   Min: [0],
+//   Max: [0],
+//   25: [0],
+//   50: [0],
+//   75: [0],
+//   100: [0],
+//   avg_high_return: [0],
+// };
 
-// const phData = [
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-//   { A: 1 },
-// ];
+// const placeholderData = [{ Var: 0, 25: 0 }];
 
-dfOutput.addColumn({
-  column: "B",
-  value: phData,
-});
-dfOutput.print();
+const df = new dfd.DataFrame(placeholderData);
+df.print();
+// df.to_csv("test2.csv").catch((err) => {
+//   console.log(err);
+// });
