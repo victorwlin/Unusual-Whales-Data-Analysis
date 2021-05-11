@@ -1,12 +1,13 @@
+// this file tests whether winners differ significantly from the overall pool
 const dfd = require("danfojs-node");
 const ttest = require("ttest");
 
 dfd
-  .read_csv("feb_prepped.csv")
+  .read_csv("3.Concat/dec20_to_mar21.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
     const optionType = "call";
-    const winDefinition = [25, 50, 75, 100];
+    const winDefinition = [10, 25, 50, 75, 100];
     const variables = [
       "ask",
       "bid",
@@ -22,6 +23,7 @@ dfd
       "volume",
     ];
 
+    // create an output df to store our results
     const placeholderData = {
       Variables: variables,
     };
@@ -35,11 +37,11 @@ dfd
       CREATE winner COLUMN
       */
       // this winner column is necessary for queries we have to make in the future
-      const winner = df["high_return"].ge(currentWinDef);
+      const winner = df["adj_high_return"].ge(currentWinDef);
       df.addColumn({ column: "winner", value: winner });
 
       /*
-      create three dataframes: one for optionType, one for winners, and one for losers
+      create two dataframes: one for optionType and one for winners
       */
       const dfOptionType = df.query({
         column: "option_type",
@@ -51,11 +53,6 @@ dfd
         is: "==",
         to: true,
       });
-      const dfOptionTypeLose = dfOptionType.query({
-        column: "winner",
-        is: "==",
-        to: false,
-      });
 
       /*
       loop through the variables and calculate & store p-values
@@ -63,27 +60,25 @@ dfd
       const pValues = [];
 
       variables.forEach((currentVar) => {
-        // determine whether we should test if win mean is greater than or less than lose mean
+        // determine whether we should test if win mean is greater than or less than overall mean
         let whichTail = "not equal";
         if (
-          dfOptionTypeWin[currentVar].mean() >
-          dfOptionTypeLose[currentVar].mean()
+          dfOptionTypeWin[currentVar].mean() > dfOptionType[currentVar].mean()
         ) {
           whichTail = "greater";
         } else if (
-          dfOptionTypeWin[currentVar].mean() <
-          dfOptionTypeLose[currentVar].mean()
+          dfOptionTypeWin[currentVar].mean() < dfOptionType[currentVar].mean()
         ) {
           whichTail = "less";
         }
 
-        // create win and lose arrays
+        // create win and overall arrays
         const winArray = dfOptionTypeWin[currentVar].values;
-        const loseArray = dfOptionTypeLose[currentVar].values;
+        const overallArray = dfOptionType[currentVar].values;
 
         // add p-value to array
         pValues.push(
-          ttest(winArray, loseArray, { alternative: whichTail }).testValue() // choose pValue or testValue
+          ttest(winArray, overallArray, { alternative: whichTail }).pValue() // choose pValue or testValue
         );
       });
 
@@ -94,9 +89,11 @@ dfd
     OUTPUT AS CSV FILE
     */
     // change file name
-    dfOutput.to_csv("testValuesCall.csv").catch((err) => {
-      console.log(err);
-    });
+    dfOutput
+      .to_csv("4.Sig/pVal-call-dec20-to-mar21-against-overall.csv")
+      .catch((err) => {
+        console.log(err);
+      });
   })
   .catch((err) => {
     console.log(err);

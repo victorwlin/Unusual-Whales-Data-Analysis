@@ -1,97 +1,38 @@
 const dfd = require("danfojs-node");
 
-const columns = [
-  "alert_time",
-  "amount_of_time_above_fifty_percent",
-  "amount_of_time_above_hundred_percent",
-  "amount_of_time_above_itm_percent",
-  "amount_of_time_above_ten_percent",
-  "amount_of_time_above_thirty_percent",
-  "amount_of_time_above_zero_percent",
-  "amount_of_time_below_zero_percent",
-  "ask",
-  "avg_ask",
-  "avg_fourteen_day_return",
-  "avg_one_day_return",
-  "avg_return",
-  "avg_seven_day_return",
-  "avg_three_day_return",
-  "avg_twentyone_day_return",
-  "bid",
-  "buy_amount",
-  "company_name",
-  "current_return",
-  "days_to_expiry",
-  "delta",
-  "diff",
-  "emojis",
-  "ever_itm",
-  "expires_at",
-  "gamma",
-  "high",
-  "high_date_time",
-  "high_diff_time",
-  "high_return",
-  "id",
-  "implied_volatility",
-  "industry_type",
-  "itm_time",
-  "low",
-  "low_date_time",
-  "low_diff_time",
-  "low_return",
-  "open_interest",
-  "option_symbol",
-  "option_type",
-  "rho",
-  "sector",
-  "strike_price",
-  "tags",
-  "theo",
-  "theta",
-  "ticker_symbol",
-  "tier",
-  "time_spent_above_fifty_in_hours",
-  "time_spent_above_hundred_in_hours",
-  "time_spent_above_thirty_in_hours",
-  "time_spent_below_zero_in_hours",
-  "time_to_first_minus_fifty",
-  "time_to_first_minus_fifty_timestamp",
-  "time_to_first_minus_fourty",
-  "time_to_first_minus_fourty_timestamp",
-  "time_to_first_minus_ten",
-  "time_to_first_minus_ten_timestamp",
-  "time_to_first_minus_thirty",
-  "time_to_first_minus_thirty_timestamp",
-  "time_to_first_minus_twenty",
-  "time_to_first_minus_twenty_timestamp",
-  "time_to_first_plus_fifty",
-  "time_to_first_plus_fifty_timestamp",
-  "time_to_first_plus_fourty",
-  "time_to_first_plus_fourty_timestamp",
-  "time_to_first_plus_hundred",
-  "time_to_first_plus_hundred_timestamp",
-  "time_to_first_plus_ten",
-  "time_to_first_plus_ten_timestamp",
-  "time_to_first_plus_thirty",
-  "time_to_first_plus_thirty_timestamp",
-  "time_to_first_plus_twenty",
-  "time_to_first_plus_twenty_timestamp",
-  "underlying_purchase_price",
-  "vega",
-  "volume",
-];
-
 dfd
-  .read_csv("raw/feb21_raw.csv")
+  .read_csv("3.Concat/dec20_to_mar21_call_with_winner.csv")
   .then((df) => {
-    // const sf1 = df[columns[0]].values;
-    // const x = df.shape[1];
-    // console.log(x);
-    const dfColumnsSorted = new dfd.DataFrame({
-      [columns[0]]: df["alert_time"].values,
+    // this is the column that I want to analyze
+    const col = "emojis";
+
+    // put unique values into an array and add total to the array
+    const sf = df[col].unique();
+    // console.log(sf.values);
+
+    const dfOutput = new dfd.DataFrame(sf.values);
+    // dfOutput.print();
+
+    // const dfOutput = new dfd.DataFrame(outputArr, {
+    //   columns: [
+    //     "Emoji",
+    //     "alerts",
+    //     "25",
+    //     "50",
+    //     "75",
+    //     "100",
+    //     "avg_high_return",
+    //     "winner_avg_days_to_high",
+    //     "winner_std_days_to_high",
+    //   ],
+    // });
+
+    /*
+    OUTPUT AS CSV FILE
+    */
+    dfOutput.to_csv("8.Emoji/emoji_unique.csv").catch((err) => {
+      console.log(err);
     });
-    dfColumnsSorted.print();
   })
   .catch((err) => {
     console.log(err);
