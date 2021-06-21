@@ -1,4 +1,4 @@
-// this file divides the alerts into deciles and calculates the probablility of winning
+// this file divides the alerts into buckets of equal size by each variable and calculates the probablility of winning in that bucket
 const dfd = require("danfojs-node");
 
 const returnBucketIndices = (numOfAlerts, numOfBuckets) => {
@@ -30,10 +30,10 @@ const returnBucketIndices = (numOfAlerts, numOfBuckets) => {
 };
 
 dfd
-  .read_csv("3.Concat/dec20_to_mar21.csv")
+  .read_csv("3.Concat/dec20_to_may21_put_with_winner.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
-    const optionType = "put";
+    // const optionType = "call";
     const winDefinition = [10, 25, 50, 75, 100];
     const variables = [
       "ask",
@@ -54,28 +54,28 @@ dfd
     /*
     MAKE QUERY FOR JUST optionType
     */
-    const dfOptionType = df.query({
-      column: "option_type",
-      is: "==",
-      to: optionType,
-    });
+    // const dfOptionType = df.query({
+    //   column: "option_type",
+    //   is: "==",
+    //   to: optionType,
+    // });
 
     /*
     MAKE winner COLUMN FOR EACH WIN DEFINITION
     */
-    winDefinition.forEach((currentWinDef) => {
-      // these winner columns are necessary for queries we have to make in the future
-      const winner = dfOptionType["adj_high_return"].ge(currentWinDef);
-      dfOptionType.addColumn({
-        column: `winner_${currentWinDef}`,
-        value: winner,
-      });
-    });
+    // winDefinition.forEach((currentWinDef) => {
+    //   // these winner columns are necessary for queries we have to make in the future
+    //   const winner = dfOptionType["adj_high_return"].ge(currentWinDef);
+    //   dfOptionType.addColumn({
+    //     column: `winner_${currentWinDef}`,
+    //     value: winner,
+    //   });
+    // });
 
     /*
     CALCULATE BUCKETS
     */
-    const numOfAlerts = dfOptionType["option_type"].size;
+    const numOfAlerts = df["option_type"].size;
     const bucketIndices = returnBucketIndices(numOfAlerts, 10);
 
     /*
@@ -88,18 +88,18 @@ dfd
         const output = [];
         output[0] = currentVar;
         output[1] = "N/A";
-        output[2] = dfOptionType["option_type"].size;
+        output[2] = numOfAlerts;
         output[3] = "N/A";
         output[4] = "N/A";
-        output[10] = dfOptionType["adj_high_return"].mean();
+        output[10] = df["adj_high_return"].mean() / 100;
         output[13] = 0;
         output[14] = output[2];
 
         winDefinition.forEach((currentWinDef, i) => {
-          const dfWin = dfOptionType.query({
+          const dfWin = df.query({
             column: `winner_${currentWinDef}`,
             is: "==",
-            to: true,
+            to: "true",
           });
           const wins = dfWin["option_type"].size;
           i = i + 5;
@@ -118,14 +118,14 @@ dfd
         CREATE ROWS FOR EVERYTHING ELSE BESIDES TOTAL
         */
         // sort by currentVar
-        dfOptionType.sort_values({ by: currentVar, inplace: true });
-        dfOptionType.reset_index(true);
+        df.sort_values({ by: currentVar, inplace: true });
+        df.reset_index(true);
 
         // run for each bucket
         let prevBucketIndex = 0;
         bucketIndices.forEach((v, i) => {
           // creating bucket
-          const subDFOptionType = dfOptionType.iloc({
+          const subDFOptionType = df.iloc({
             rows: [`${prevBucketIndex}:${v}`],
             columns: ["0:"],
           });
@@ -137,7 +137,7 @@ dfd
           output[2] = subDFOptionType["option_type"].size;
           output[3] = subDFOptionType[currentVar].min();
           output[4] = subDFOptionType[currentVar].max();
-          output[10] = subDFOptionType["adj_high_return"].mean();
+          output[10] = subDFOptionType["adj_high_return"].mean() / 100;
           output[13] = prevBucketIndex;
           output[14] = v;
 
@@ -145,7 +145,7 @@ dfd
             const subDFwin = subDFOptionType.query({
               column: `winner_${currentWinDef}`,
               is: "==",
-              to: true,
+              to: "true",
             });
             const wins = subDFwin["option_type"].size;
             i = i + 5;
@@ -172,7 +172,7 @@ dfd
     const dfOutput = new dfd.DataFrame(outputArr, {
       columns: [
         "Var",
-        "Decile",
+        "Group Number",
         "alerts_in_sample",
         "Min",
         "Max",
@@ -181,9 +181,9 @@ dfd
         "50",
         "75",
         "100",
-        "avg_high_return",
-        "avg_days_to_high_for_winner_25",
-        "std_days_to_high_for_winner_25",
+        "avg_adj_high_return",
+        "avg_days_to_high_for_win_def_25",
+        "std_days_to_high_for_win_def_25",
         "index_start",
         "index_end",
       ],
@@ -192,7 +192,7 @@ dfd
     /*
     OUTPUT AS CSV FILE
     */
-    dfOutput.to_csv("5.WinProb/WinProbPut.csv").catch((err) => {
+    dfOutput.to_csv("5.WinProb/WinProbPut-dec21-may21.csv").catch((err) => {
       console.log(err);
     });
   })

@@ -1,14 +1,14 @@
 const dfd = require("danfojs-node");
 
 dfd
-  .read_csv("3.Concat/dec20_to_mar21_put_with_winner.csv")
+  .read_csv("3.Concat/dec20_to_may21_call_with_winner.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
-    const testingSlice = { var: "expires_in", lower: 23, upper: 31 };
+    const testingSlice = { var: "gamma", lower: 0.08, upper: 0.09 };
 
     const winDefinition = [25, 50, 75, 100];
-    // const variables = ["total"]; // only use for determining if I should include or exclude lower and upper bounds in my slice
-    const variables = ["delta", "total"];
+    const variables = ["total"]; // only use for determining if I should include or exclude lower and upper bounds in my slice
+    // const variables = ["delta", "total"];
 
     /*
     CREATE SLICE OF SPECIFIC BUCKET
@@ -21,7 +21,7 @@ dfd
     });
     df.query({
       column: testingSlice.var,
-      is: "<",
+      is: "<=",
       to: testingSlice.upper,
       inplace: true,
     });

@@ -29,10 +29,10 @@ const returnBucketIndices = (numOfAlerts, numOfBuckets) => {
 };
 
 dfd
-  .read_csv("3.Concat/dec20_to_mar21_put_with_winner.csv")
+  .read_csv("3.Concat/dec20_to_may21_call_with_winner.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
-    const testingSlice = { var: "expires_in", lower: 23, upper: 31 };
+    const testingSlice = { var: "gamma", lower: 0.08, upper: 0.09 };
 
     const winDefinition = [10, 25, 50, 75, 100];
     // const variables = ["total"]; // only use for determining if I should include or exclude lower and upper bounds in my slice
@@ -57,13 +57,13 @@ dfd
     */
     df.query({
       column: testingSlice.var,
-      is: ">=",
+      is: ">",
       to: testingSlice.lower,
       inplace: true,
     });
     df.query({
       column: testingSlice.var,
-      is: "<",
+      is: "<=",
       to: testingSlice.upper,
       inplace: true,
     });
@@ -72,7 +72,7 @@ dfd
     CALCULATE BUCKETS
     */
     const numOfAlerts = df["option_type"].size;
-    const bucketIndices = returnBucketIndices(numOfAlerts, 10);
+    const bucketIndices = returnBucketIndices(numOfAlerts, 5);
 
     /*
     MAIN LOOP FOR VARIABLES
@@ -87,7 +87,7 @@ dfd
         output[2] = numOfAlerts;
         output[3] = df[testingSlice.var].min();
         output[4] = df[testingSlice.var].max();
-        output[10] = df["adj_high_return"].mean();
+        output[10] = df["adj_high_return"].mean() / 100;
         output[11] = "Error";
         output[12] = "Error";
         output[13] = "N/A";
@@ -135,7 +135,7 @@ dfd
           output[2] = subDF["option_type"].size;
           output[3] = subDF[currentVar].min();
           output[4] = subDF[currentVar].max();
-          output[10] = subDF["adj_high_return"].mean();
+          output[10] = subDF["adj_high_return"].mean() / 100;
           output[11] = "Error";
           output[12] = "Error";
           output[13] = prevBucketIndex;
@@ -172,7 +172,7 @@ dfd
     const dfOutput = new dfd.DataFrame(outputArr, {
       columns: [
         "Var",
-        "Decile",
+        "Group Number",
         "alerts_in_sample",
         "Min",
         "Max",
@@ -181,7 +181,7 @@ dfd
         "50",
         "75",
         "100",
-        "avg_high_return",
+        "avg_adj_high_return",
         "avg_days_to_high",
         "std_days_to_high",
         "index_start",
@@ -193,7 +193,7 @@ dfd
     OUTPUT AS CSV FILE
     */
     dfOutput
-      .to_csv("6.MultiVar/expires_in_23-31_put_by_val.csv")
+      .to_csv("6.MultiVar/gamma_0.08-0.09_call_by_val_dec20_may21v2.csv")
       .catch((err) => {
         console.log(err);
       });

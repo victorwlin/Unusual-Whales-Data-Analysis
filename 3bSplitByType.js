@@ -2,7 +2,7 @@
 const dfd = require("danfojs-node");
 
 dfd
-  .read_csv("3.Concat/dec20_to_mar21.csv")
+  .read_csv("3.Concat/dec20_to_may21.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
     const optionType = "put";
@@ -33,7 +33,7 @@ dfd
     OUTPUT AS CSV FILE
     */
     dfOptionType
-      .to_csv("3.Concat/dec20_to_mar21_put_with_winner.csv")
+      .to_csv("3.Concat/dec20_to_may21_put_with_winner.csv")
       .catch((err) => {
         console.log(err);
       });

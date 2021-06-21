@@ -1,12 +1,12 @@
-// this file divides the alerts into deciles and calculates the probablility of winning
+// this file isolates a single variable and groups and iterates by a custom value
 const dfd = require("danfojs-node");
 
 dfd
-  .read_csv("3.Concat/dec20_to_mar21_put_with_winner.csv")
+  .read_csv("3.Concat/dec20_to_may21_call_with_winner.csv")
   .then((df) => {
     // MAKE SURE THESE VARIABLES ARE CORRECT BEFORE RUNNING
     const winDefinition = [10, 25, 50, 75, 100];
-    const variables = ["expires_in", "total"];
+    const variables = ["gamma", "total"];
 
     /*
     MAIN LOOP FOR VARIABLES
@@ -21,7 +21,7 @@ dfd
         output[2] = df["option_type"].size;
         output[3] = "N/A";
         output[4] = "N/A";
-        output[10] = df["adj_high_return"].mean();
+        output[10] = df["adj_high_return"].mean() / 100;
 
         winDefinition.forEach((currentWinDef, i) => {
           const dfWin = df.query({
@@ -47,12 +47,12 @@ dfd
         */
         let i2 = 1;
         // create temporary slices
-        for (let i = 0.08; i <= 0.09; i = i + 0.01) {
+        for (let i = 0.07; i <= 0.09; i = i + 0.01) {
           // some of these slices don't have any alerts, so we need to try and catch for errors
           try {
             const dfTemp = df.query({
               column: currentVar,
-              is: ">=",
+              is: ">",
               to: i,
               inplace: false,
             });
@@ -70,7 +70,7 @@ dfd
             output[2] = dfTemp["option_type"].size;
             output[3] = dfTemp[currentVar].min();
             output[4] = dfTemp[currentVar].max();
-            output[10] = dfTemp["adj_high_return"].mean();
+            output[10] = dfTemp["adj_high_return"].mean() / 100;
             output[11] = dfTemp["days_to_high"].mean();
             output[12] = dfTemp["days_to_high"].std();
 
@@ -134,7 +134,7 @@ dfd
     const dfOutput = new dfd.DataFrame(outputArr, {
       columns: [
         "Var",
-        "Decile",
+        "Group Number",
         "alerts_in_sample",
         "Min",
         "Max",
@@ -148,15 +148,15 @@ dfd
         "std_days_to_high",
       ],
     });
-    dfOutput.print();
-    dfOutput["alerts_in_sample"].print();
-    dfOutput["25"].print();
+
     /*
     OUTPUT AS CSV FILE
     */
-    // dfOutput.to_csv("5.WinProb/WinProbCallGamma.csv").catch((err) => {
-    //   console.log(err);
-    // });
+    dfOutput
+      .to_csv("5.WinProb/WinProbCallGamma-dec20-may21v2.csv")
+      .catch((err) => {
+        console.log(err);
+      });
   })
   .catch((err) => {
     console.log(err);

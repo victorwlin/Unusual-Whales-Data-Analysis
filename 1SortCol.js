@@ -2,7 +2,7 @@
 const dfd = require("danfojs-node");
 
 dfd
-  .read_csv("0.Raw/mar21_raw.csv")
+  .read_csv("0.Raw/06.may21_raw.csv")
   .then((df) => {
     let temp = {};
 
@@ -117,7 +117,7 @@ dfd
     /*
     OUTPUT AS CSV FILE
     */
-    df.to_csv("1.SortCol/mar21_colsort.csv").catch((err) => {
+    df.to_csv("1.SortCol/06.may21_colsort.csv").catch((err) => {
       console.log(err);
     });
   })
